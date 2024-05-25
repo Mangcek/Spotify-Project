@@ -23,14 +23,14 @@ const Tab1: React.FC = () => {
   const db = getFirestore();
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const uid = user.uid;
-        console.log("uid", uid);
-      } else {
-        console.log("user is logged out");
-      }
-    });
+    // onAuthStateChanged(auth, (user) => {
+    //   if (user) {
+    //     const uid = user.uid;
+    //     console.log("uid", uid);
+    //   } else {
+    //     console.log("user is logged out");
+    //   }
+    // });
   }, []);
 
   useEffect(() => {
@@ -127,8 +127,8 @@ const Tab1: React.FC = () => {
                       spaceBetween={20}
                       slidesPerView={2}
                       scrollbar={{ draggable: true }}
-                      onSlideChange={() => console.log('slide change')}
-                      onSwiper={swiper => console.log(swiper)}
+                      // onSlideChange={() => console.log('slide change')}
+                      // onSwiper={swiper => console.log(swiper)}
                     >
                       {shuffleArray(lagus).slice(0, 5).map(lagu => (
                         <SwiperSlide key={lagu.id} className='slide'>
@@ -152,8 +152,8 @@ const Tab1: React.FC = () => {
                       spaceBetween={20}
                       slidesPerView={2}
                       scrollbar={{ draggable: true }}
-                      onSlideChange={() => console.log('slide change')}
-                      onSwiper={swiper => console.log(swiper)}
+                      // onSlideChange={() => console.log('slide change')}
+                      // onSwiper={swiper => console.log(swiper)}
                     >
                       {lagus.slice(0, 5).map(lagu => (
                         <SwiperSlide key={lagu.id} className='slide'>
@@ -177,8 +177,8 @@ const Tab1: React.FC = () => {
                       spaceBetween={20}
                       slidesPerView={2}
                       scrollbar={{ draggable: true }}
-                      onSlideChange={() => console.log('slide change')}
-                      onSwiper={swiper => console.log(swiper)}
+                      // onSlideChange={() => console.log('slide change')}
+                      // onSwiper={swiper => console.log(swiper)}
                     >
                       {lagus.slice(0, 5).map(lagu => (
                         <SwiperSlide key={lagu.id} className='slide'>
@@ -202,8 +202,8 @@ const Tab1: React.FC = () => {
                       spaceBetween={20}
                       slidesPerView={2}
                       scrollbar={{ draggable: true }}
-                      onSlideChange={() => console.log('slide change')}
-                      onSwiper={swiper => console.log(swiper)}
+                      // onSlideChange={() => console.log('slide change')}
+                      // onSwiper={swiper => console.log(swiper)}
                     >
                       {newSongs.slice(0, 5).map(lagu => (
                         <SwiperSlide key={lagu.id} className='slide'>
@@ -227,8 +227,8 @@ const Tab1: React.FC = () => {
                       spaceBetween={20}
                       slidesPerView={2}
                       scrollbar={{ draggable: true }}
-                      onSlideChange={() => console.log('slide change')}
-                      onSwiper={swiper => console.log(swiper)}
+                      // onSlideChange={() => console.log('slide change')}
+                      // onSwiper={swiper => console.log(swiper)}
                     >
                       {newArtists.slice(0, 5).map(artist => (
                         <SwiperSlide key={artist.id} className='slide' >

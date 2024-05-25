@@ -1,9 +1,73 @@
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonBackButton, IonContent, IonGrid, IonRow, IonCol, IonAvatar, IonTitle, IonButton, IonIcon, IonItem } from '@ionic/react';
 import { ellipsisVerticalOutline } from 'ionicons/icons';
-import React from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { useHistory } from 'react-router-dom';
+import {
+collection,
+getDocs,
+updateDoc,
+doc,
+where,
+query,
+} from "firebase/firestore";
+import { db, storage } from "../firebaseConfig";
+import { AuthContext } from "../context/ContextProvider";
+import { AuthContextType } from "../context/ContextProvider";
 import './Account.css'
 
+interface ProfileProps {
+    name: string;
+    email: string;
+    photoURL: string;
+}
+
+const defaultPP = "https://ionicframework.com/docs/img/demos/avatar.svg"
+
 const Account:React.FC = () => {
+    const [profile, setProfile] = useState<ProfileProps | null>({
+        name: "",
+        email: "",
+        photoURL: "",
+    });
+    const profileRef = useRef(false);
+    const history = useHistory();
+    const authContext = useContext(AuthContext) as AuthContextType;
+    const { auth, setAuth } = authContext;
+
+    const getUserProfile = async () => {
+        if (!auth) return;
+    
+        const uid = auth.uid;
+        const usersCollectionRef = collection(db, "users");
+    
+        try {
+          const snapshot = await getDocs(
+            query(usersCollectionRef, where("uid", "==", uid))
+          );
+          const currentProfile = snapshot.docs[0] as any;
+    
+          if (currentProfile) {
+            const profile = {
+              name: currentProfile.data().name,
+              email: currentProfile.data().email,
+              photoURL: currentProfile.data().photoURL ?? defaultPP,
+            } as ProfileProps;
+            setProfile(profile);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.clear();
+        setAuth(null);
+        history.push("/login");
+    };
+
+    useEffect(() => {
+        getUserProfile();
+    }, [auth]);
 
     return(
         <>
@@ -23,10 +87,10 @@ const Account:React.FC = () => {
                                     <IonRow>
                                         <IonCol>
                                             <IonAvatar>
-                                                <img alt="abc" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+                                                <img src={profile?.photoURL} />
                                             </IonAvatar>
-                                            <IonTitle>Jonathan</IonTitle>
-                                            <h5>0 pengikut . 3 mengikuti</h5>
+                                            <IonTitle>{profile?.name}</IonTitle>
+                                            {/* <h5>0 pengikut | 3 mengikuti</h5> */}
                                         </IonCol>
                                     </IonRow>
                                     <IonRow>
@@ -45,6 +109,9 @@ const Account:React.FC = () => {
                                                 
                                             </IonItem>
                                         </IonCol>
+                                    </IonRow>
+                                    <IonRow>
+                                        <IonButton onClick={handleLogout}>Logout</IonButton>
                                     </IonRow>
                                 </IonGrid>
                             </IonCol>
