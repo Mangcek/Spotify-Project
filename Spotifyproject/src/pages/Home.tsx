@@ -36,11 +36,18 @@ const Tab1: React.FC = () => {
   useEffect(() => {
     const fetchLagus = async () => {
       try {
-        const querySnapshot0 = await getDocs(collection(db, "lagu"));
-        const laguList = querySnapshot0.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        if (laguList.length > 0) {
-          setLagu(laguList);
-        }
+        const songCollectionRef = collection(db, "song");
+        const snapshot = await getDocs(query(songCollectionRef));
+        setLagu(snapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            albumId: doc.data().albumId,
+            album: doc.data().album,
+            artistId: doc.data().artistId,
+            artist: doc.data().artist,
+            songURL: doc.data().songURL,
+            photoURL: doc.data().photoURL,
+        })));
       } catch (error) {
         console.error("Error getting documents: ", error);
       }
