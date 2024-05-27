@@ -2,7 +2,7 @@ import { IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonInput
 import react, { useEffect, useRef, useState, useContext } from 'react';
 import "../firebaseConfig";
 import bcrypt from 'bcryptjs';
-import { collection, addDoc, getFirestore, getDocs, serverTimestamp, query, where } from "firebase/firestore";
+import { collection, addDoc, getFirestore, getDocs, serverTimestamp, query, where, Timestamp } from "firebase/firestore";
 import { getStorage, uploadBytes, ref, getDownloadURL } from 'firebase/storage';
 import { useHistory } from 'react-router';
 import { Directory, Filesystem } from "@capacitor/filesystem";
@@ -72,6 +72,7 @@ const Addartist:React.FC = () => {
             await addDoc(collection(db, "artist"), {
                 name: artist?.name,
                 photoURL: downloadURL,
+                createdAt: Timestamp.now(),
             });
             history.push('/admin');
         } catch (error) {

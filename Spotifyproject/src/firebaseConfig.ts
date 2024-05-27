@@ -93,6 +93,9 @@ const registerWithEmailAndPassword = async (
       authProvider: "local",
       email,
       isAdmin: false,
+      playlist: [],
+      likedAlbum: [],
+      likedArtist: [],
     });
     return {
       isRegistered: true,

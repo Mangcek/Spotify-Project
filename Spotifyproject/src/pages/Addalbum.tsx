@@ -1,7 +1,7 @@
 import { IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonMenuButton, IonPage, IonRow, IonSelect, IonSelectOption, IonTitle, IonToolbar } from '@ionic/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { getStorage, uploadBytes, ref, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, getFirestore, getDocs, serverTimestamp, query } from "firebase/firestore"; // Import serverTimestamp
+import { collection, addDoc, getFirestore, getDocs, serverTimestamp, query, Timestamp } from "firebase/firestore"; // Import serverTimestamp
 import { useHistory } from 'react-router';
 import "../firebaseConfig";
 
@@ -80,6 +80,7 @@ const Addalbum: React.FC = () => {
                 artist: artists.filter((x) => x.id == selectedArtist)[0]?.name,
                 songs: [],
                 photoURL: downloadURL,
+                createdAt: Timestamp.now(),
             });
             history.push('/admin');
         } catch (error) {

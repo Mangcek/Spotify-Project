@@ -3,7 +3,7 @@ import react, { useEffect, useRef, useState, useContext } from 'react';
 import "../firebaseConfig";
 import bcrypt from 'bcryptjs';
 import { collection, addDoc, getFirestore, getDocs, serverTimestamp, query, where, updateDoc } from "firebase/firestore";
-import { getStorage, uploadBytes, ref, getDownloadURL } from 'firebase/storage';
+import { getStorage, uploadBytes, ref, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useHistory, useParams } from 'react-router';
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { AuthContext } from "../context/ContextProvider";
@@ -102,6 +102,10 @@ const Editartist:React.FC = () => {
             });
 
             if(selectedFile) {
+                let pathArtist = decodeURIComponent(snapshot.docs.filter(x => x.id == artistID)[0].data().photoURL.split("/o/")[1].split("?alt=")[0]);
+                const photoArtistRef = ref(storage, pathArtist);
+                deleteObject(photoArtistRef)
+
                 let downloadURL: string | null = null;
                 downloadURL = (await savePhotoToFirebase()) as string;
                 await updateDoc(artistDocRef, {

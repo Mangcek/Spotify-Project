@@ -147,7 +147,7 @@ const Admin: React.FC = () => {
         fetchArtists();
         fetchAlbums();
         fetchLagus();
-    }, [db]);
+    }, []);
 
     return (
         <>

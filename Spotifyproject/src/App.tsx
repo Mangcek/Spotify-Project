@@ -31,13 +31,6 @@ import Admin from './pages/Admin';
 import { useState, useEffect, useContext, useRef } from 'react';
 import Addartist from './pages/Addartist';
 import PlayMusic2 from './pages/PlayMusic2';
-import Genre0 from './pages/Genre0';
-import Genre1 from './pages/Genre1';
-import Genre2 from './pages/Genre2';
-import Genre3 from './pages/Genre3';
-import Genre4 from './pages/Genre4';
-import Genre5 from './pages/Genre5';
-import Genre6 from './pages/Genre6';
 import artistDetail from './pages/artistDetail';
 import LogicRoute from './pages/LogicRoute';
 import {
@@ -56,6 +49,7 @@ import Addalbum from './pages/Addalbum';
 import Editartist from './pages/Editartist';
 import Editalbum from './pages/Editalbum';
 import Editsong from './pages/Editsong';
+import SearchGenre from './pages/SearchGenre';
 
 setupIonicReact();
 
@@ -137,19 +131,12 @@ const App: React.FC = () => {
           <Route exact path="/tab1" component={Tab1} />
           <Route exact path="/account" component={Account} />
           <Route exact path="/settings" component={Settings} />
-          <Route exact path="/playmusic2" component={PlayMusic2} />
           <Route exact path="/history" component={History} />
           <Route exact path="/new" component={Offline} />
           <Route exact path="/tab2" component={Tab2} />
           <Route exact path="/registration" component={Registration} />
           <Route exact path="/login" component={Login} />
-          <Route exact path="/genre0" component={Genre0} />
-          <Route exact path="/genre1" component={Genre1} />
-          <Route exact path="/genre2" component={Genre2} />
-          <Route exact path="/genre3" component={Genre3} />
-          <Route exact path="/genre4" component={Genre4} />
-          <Route exact path="/genre5" component={Genre5} />
-          <Route exact path="/genre6" component={Genre6} />
+          <Route path="/genre/:genre" component={SearchGenre} />
           <Route exact path="/admin" component={Admin} />
           <Route exact path="/addartist" component={Addartist} />
           <Route path="/editartist/:artistId" component={Editartist} />
@@ -162,6 +149,7 @@ const App: React.FC = () => {
           <Route exact path="/YourLibrary" component={YourLibrary} />
           <Route path="/artist/:artistNamaartist" component={artistDetail} />
           <Route path="/playlist/:playlistId" component={PlaylistDetail1} />
+          <Route path="/play/:songId" component={PlayMusic2} />
         </IonRouterOutlet>
         { auth ?
           <IonTabBar slot="bottom">
@@ -177,10 +165,10 @@ const App: React.FC = () => {
               <IonIcon aria-hidden="true" icon={libraryOutline} />
               <IonLabel>Your Library</IonLabel>
             </IonTabButton>
-            <IonTabButton tab="tab4" href="/playmusic2">
+            {/* <IonTabButton tab="tab4" href="/playmusic2">
               <IonIcon aria-hidden="true" icon={musicalNote} />
               <IonLabel>Play Music</IonLabel>
-            </IonTabButton>
+            </IonTabButton> */}
           </IonTabBar>
         :
           <IonTabBar slot="bottom"></IonTabBar>

@@ -1,6 +1,6 @@
 import { IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonMenuButton, IonPage, IonRow, IonSelect, IonSelectOption, IonTitle, IonToolbar } from '@ionic/react';
 import React, { useEffect, useRef, useState } from 'react';
-import { getStorage, uploadBytes, ref, getDownloadURL } from 'firebase/storage';
+import { getStorage, uploadBytes, ref, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, getFirestore, getDocs, serverTimestamp, query, updateDoc, where } from "firebase/firestore"; // Import serverTimestamp
 import { useHistory, useParams } from 'react-router';
 import "../firebaseConfig";
@@ -10,6 +10,7 @@ interface SongProps {
     album: string;
     albumId: string;
     artist: string;
+    genre: string;
     photoURL: string;
     songURL: string;
 }
@@ -21,6 +22,7 @@ const Editsong: React.FC = () => {
         album: "",
         albumId: "",
         artist: "",
+        genre: "",
         photoURL: "",
         songURL: "",
     });
@@ -29,6 +31,7 @@ const Editsong: React.FC = () => {
         album: "",
         albumId: "",
         artist: "",
+        genre: "",
         photoURL: "",
         songURL: "",
     });
@@ -39,9 +42,55 @@ const Editsong: React.FC = () => {
     const [selectedFile0, setSelectedFile0] = useState<File>();
     const [selectedFile1, setSelectedFile1] = useState<File>();
     const [selectedAlbum, setSelectedAlbum] = useState<string>('');
+    const [selectedGenre, setSelectedGenre] = useState<string>('');
     const storage = getStorage();
     const db = getFirestore();
     const [albums, setAlbums] = useState<Array<any>>([]);
+
+    const genres = [
+        {
+          id: 1,
+          nama: 'Rock',
+          image: '',
+          link: '/genre0'
+        },
+        {
+          id: 2,
+          nama: 'Pop',
+          image: '',
+          link: '/genre1'
+        },
+        {
+          id: 3,
+          nama: 'Jazz',
+          image: '',
+          link: '/genre2'
+        },
+        {
+          id: 4,
+          nama: 'Classical',
+          image: '',
+          link: '/genre3'
+        },
+        {
+          id: 5,
+          nama: "80's",
+          image: '',
+          link: '/genre4'
+        },
+        {
+          id: 6,
+          nama: "Hip-Hop",
+          image: '',
+          link: '/genre5'
+        },
+        {
+          id: 7,
+          nama: "Indie",
+          image: '',
+          link: '/genre6'
+        }
+    ];
 
     const getSongData = async () => {
         const artistCollectionRef = collection(db, "song");
@@ -57,10 +106,12 @@ const Editsong: React.FC = () => {
                         album: doc.data().album,
                         artistId: doc.data().artistId,
                         artist: doc.data().artist,
+                        genre: doc.data().genre,
                         photoURL: doc.data().photoURL,
                         songURL: doc.data().songURL,
                     } as SongProps;
                     setSelectedAlbum(doc.data().albumId)
+                    setSelectedGenre(doc.data().genre)
                     setSong(currentSongData)
                     setNewSong(currentSongData)
                 }
@@ -138,7 +189,8 @@ const Editsong: React.FC = () => {
         if (song?.name == newSong?.name && 
             !selectedFile0 && 
             !selectedFile1 && 
-            song?.albumId == selectedAlbum) return
+            song?.albumId == selectedAlbum &&
+            song?.genre == selectedGenre) return
 
         try {
             const songCollection = collection(db, "song");
@@ -151,9 +203,14 @@ const Editsong: React.FC = () => {
                 album: albums.filter((x) => x.id == selectedAlbum)[0]?.name,
                 artistId: albums.filter((x) => x.id == selectedAlbum)[0]?.artistId,
                 artist: albums.filter((x) => x.id == selectedAlbum)[0]?.artist,
+                genre: selectedGenre
             });
 
             if(selectedFile0) {
+                let pathPhotoSong = decodeURIComponent(snapshot.docs.filter(x => x.id == songID)[0].data().photoURL.split("/o/")[1].split("?alt=")[0]);
+                const photoSongRef = ref(storage, pathPhotoSong);
+                deleteObject(photoSongRef)
+
                 let downloadURL: string | null = null;
                 downloadURL = (await savePhotoToFirebase()) as string;
                 await updateDoc(songDocRef, {
@@ -162,6 +219,10 @@ const Editsong: React.FC = () => {
             }
 
             if(selectedFile1) {
+                let pathSong = decodeURIComponent(snapshot.docs.filter(x => x.id == songID)[0].data().songURL.split("/o/")[1].split("?alt=")[0]);
+                const songRef = ref(storage, pathSong);
+                deleteObject(songRef)
+
                 let downloadSongURL: string | null = null;
                 downloadSongURL = (await saveSongToFirebase()) as string;
                 await updateDoc(songDocRef, {
@@ -260,6 +321,14 @@ const Editsong: React.FC = () => {
                                                     <IonSelect value={selectedAlbum} onIonChange={(e) => setSelectedAlbum(e.detail.value)}>
                                                         {albums.map((album) => (
                                                             <IonSelectOption key={album.id} value={album.id}>{album.name}</IonSelectOption>
+                                                        ))}
+                                                    </IonSelect>
+                                                </IonItem>
+                                                <IonItem>
+                                                    <IonLabel>Pilih genre</IonLabel>
+                                                    <IonSelect value={selectedGenre} onIonChange={(e) => setSelectedGenre(e.detail.value)}>
+                                                        {genres.map((genre) => (
+                                                            <IonSelectOption key={genre.id} value={genre.nama}>{genre.nama}</IonSelectOption>
                                                         ))}
                                                     </IonSelect>
                                                 </IonItem>

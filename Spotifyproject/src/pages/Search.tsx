@@ -1,11 +1,11 @@
 import { IonAvatar, IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonMenuButton, IonPage, IonPopover, IonRow, IonSearchbar, IonTitle, IonToolbar } from '@ionic/react';
-import { cameraOutline, ellipsisVerticalOutline, heartOutline, newspaperOutline } from 'ionicons/icons';
+import { cameraOutline, ellipsisVerticalOutline, heartOutline, newspaperOutline, skull, walk, headset, ear, hourglass, accessibility, sunny } from 'ionicons/icons';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
-import { getDocs, collection, getFirestore } from 'firebase/firestore';
+import { getDocs, collection, getFirestore, query } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
@@ -14,44 +14,37 @@ const Tab2: React.FC = () => {
     {
       id: 1,
       nama: 'Rock',
-      image: '',
-      link: '/genre0'
+      icon: skull
     },
     {
       id: 2,
       nama: 'Pop',
-      image: '',
-      link: '/genre1'
+      icon: walk
     },
     {
       id: 3,
       nama: 'Jazz',
-      image: '',
-      link: '/genre2'
+      icon: headset
     },
     {
       id: 4,
       nama: 'Classical',
-      image: '',
-      link: '/genre3'
+      icon: ear
     },
     {
       id: 5,
       nama: "80's",
-      image: '',
-      link: '/genre4'
+      icon: hourglass
     },
     {
       id: 6,
       nama: "Hip-Hop",
-      image: '',
-      link: '/genre5'
+      icon: accessibility
     },
     {
       id: 7,
       nama: "Indie",
-      image: '',
-      link: '/genre6'
+      icon: sunny
     }
   ];
 
@@ -65,14 +58,21 @@ const Tab2: React.FC = () => {
   const [showArtistSearch, setShowArtistSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const spaceBetween = {
+    display: "flex",
+    justifyContent: "space-between",
+  };
+
   useEffect(() => {
     const fetchArtists = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "artists"));
-        const artistList = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        if (artistList.length > 0) {
-          setArtists(artistList);
-        }
+        const artistCollectionRef = collection(db, "artist");
+        const snapshot = await getDocs(query(artistCollectionRef));
+        setArtists(snapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            photoURL: doc.data().photoURL
+        })));
       } catch (error) {
         console.error("Error getting artists: ", error);
       }
@@ -83,10 +83,18 @@ const Tab2: React.FC = () => {
   useEffect(() => {
     async function fetchLagus() {
       try {
-        const querySnapshot = await getDocs(collection(db, "songs"));
-        const songsData = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        console.log("Fetched songs: ", songsData);
-        setLagu(songsData);
+        const songCollectionRef = collection(db, "song");
+        const snapshot = await getDocs(query(songCollectionRef));
+        setLagu(snapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            albumId: doc.data().albumId,
+            album: doc.data().album,
+            artistId: doc.data().artistId,
+            artist: doc.data().artist,
+            songURL: doc.data().songURL,
+            photoURL: doc.data().photoURL,
+        })));
       } catch (error) {
         console.error("Error getting songs: ", error);
       }
@@ -106,12 +114,12 @@ const Tab2: React.FC = () => {
       setShowArtistSearch(true);
 
       const filteredSongs = lagus.filter(lagu =>
-        lagu.namalagu.toLowerCase().includes(value.toLowerCase())
+        lagu.name.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredLagus(filteredSongs);
 
       const filteredArtists = artists.filter(artist =>
-        artist.namaartist.toLowerCase().includes(value.toLowerCase())
+        artist.name.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredArtists(filteredArtists);
     } else {
@@ -159,16 +167,17 @@ const Tab2: React.FC = () => {
                           spaceBetween={20}
                           slidesPerView={2}
                           scrollbar={{ draggable: true }}
-                          onSlideChange={() => console.log('slide change')}
-                          onSwiper={swiper => console.log(swiper)}
+                          // onSlideChange={() => console.log('slide change')}
+                          // onSwiper={swiper => console.log(swiper)}
                         >
                           {data.map(user => (
-                            <SwiperSlide key={user.id} className='slide' onClick={() => handleCardClick(user.link)}>
+                            <SwiperSlide key={user.id} className='slide' onClick={() => handleCardClick('/genre/' + user.nama)}>
                               <div className='slide-content'>
-                                <div className='user-image'>
-                                  <img src={user.image} alt={user.nama} />
+                                <div className='user-image' style={{display: 'flex'}}>
+                                  {/* <img src={user.image} alt={user.nama} /> */}
+                                  <IonIcon icon={user.icon} style={{margin: 'auto 8px',}}/>
+                                  <h5>{user.nama}</h5>
                                 </div>
-                                <h5>{user.nama}</h5>
                               </div>
                             </SwiperSlide>
                           ))}
@@ -183,30 +192,32 @@ const Tab2: React.FC = () => {
                           spaceBetween={20}
                           slidesPerView={2}
                           scrollbar={{ draggable: true }}
-                          onSlideChange={() => console.log('slide change')}
-                          onSwiper={swiper => console.log(swiper)}
+                          // onSlideChange={() => console.log('slide change')}
+                          // onSwiper={swiper => console.log(swiper)}
                         >
                           {artists.slice(0, 8).map(artist => (
                             <SwiperSlide key={artist.id} className='slide'>
                               <div className='slide-content'>
                                 <div className='user-image'>
-                                  <img src={artist.fotoUrl} alt={artist.namaartist} />
+                                  <img src={artist.photoURL} alt={artist.name} style={{width: "100px", height: "100px"}}/>
                                 </div>
-                                <h5>{artist.namaartist}</h5>
-                            <IonButtons slot='start'>
-                              <IonButton><IonIcon icon={heartOutline}/></IonButton>
-                            </IonButtons>
-                            <IonButtons slot='end'>
-                              <IonButton id="vu" ><IonIcon icon={ellipsisVerticalOutline}/></IonButton>
-                              <IonPopover trigger="vu" triggerAction="click">
-                                <IonContent class="ion-padding">
-                                  <IonItem button={true} routerLink={`/artist/${artist.namaartist}`}>
-                                    <IonIcon icon={newspaperOutline} />
-                                    <IonLabel>Selengkapnya</IonLabel>
-                                  </IonItem>
-                                </IonContent>
-                              </IonPopover>
-                            </IonButtons>
+                                <h5>{artist.name}</h5>
+                                <div style={spaceBetween}>
+                                  <IonButtons slot='start'>
+                                    <IonButton><IonIcon icon={heartOutline}/></IonButton>
+                                  </IonButtons>
+                                  <IonButtons slot='end'>
+                                    <IonButton id="vu" ><IonIcon icon={ellipsisVerticalOutline}/></IonButton>
+                                    <IonPopover trigger="vu" triggerAction="click">
+                                      <IonContent class="ion-padding">
+                                        <IonItem button={true} routerLink={`/artist/${artist.namaartist}`}>
+                                          <IonIcon icon={newspaperOutline} />
+                                          <IonLabel>Selengkapnya</IonLabel>
+                                        </IonItem>
+                                      </IonContent>
+                                    </IonPopover>
+                                  </IonButtons>
+                                </div>
                               </div>
                             </SwiperSlide>
                           ))}
@@ -224,17 +235,17 @@ const Tab2: React.FC = () => {
                           spaceBetween={20}
                           slidesPerView={2}
                           scrollbar={{ draggable: true }}
-                          onSlideChange={() => console.log('slide change')}
-                          onSwiper={swiper => console.log(swiper)}
+                          // onSlideChange={() => console.log('slide change')}
+                          // onSwiper={swiper => console.log(swiper)}
                         >
                         {filteredLagus.map(lagu => (
                           <SwiperSlide key={lagu.id} className='slide'>
                             <div className='slide-content'>
                               <div className='user-image'>
-                                <img src={lagu.fotoUrl} alt={lagu.namalagu} />
+                                <img src={lagu.photoURL} alt={lagu.name} style={{width: "100px", height: "100px"}}/>
                               </div>
-                              <h5>{lagu.namalagu}</h5>
-                              <p className='user-testimonials'><i>{lagu.namaartist}</i></p>
+                              <h5>{lagu.name}</h5>
+                              <p className='user-testimonials'><i>{lagu.artist}</i></p>
                             </div>
                           </SwiperSlide>
                         ))}
@@ -251,16 +262,16 @@ const Tab2: React.FC = () => {
                           spaceBetween={20}
                           slidesPerView={2}
                           scrollbar={{ draggable: true }}
-                          onSlideChange={() => console.log('slide change')}
-                          onSwiper={swiper => console.log(swiper)}
+                          // onSlideChange={() => console.log('slide change')}
+                          // onSwiper={swiper => console.log(swiper)}
                         >
                         {filteredArtists.map(artist => (
                           <SwiperSlide key={artist.id} className='slide'>
                             <div className='slide-content'>
                               <div className='user-image'>
-                                <img src={artist.fotoUrl} alt={artist.namaartist} />
+                                <img src={artist.photoURL} alt={artist.name} style={{width: "100px", height: "100px"}}/>
                               </div>
-                              <h5>{artist.namaartist}</h5>
+                              <h5>{artist.name}</h5>
                             </div>
                           </SwiperSlide>
                         ))}

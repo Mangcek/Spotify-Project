@@ -1,7 +1,7 @@
 import { IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonMenuButton, IonPage, IonRow, IonSelect, IonSelectOption, IonTitle, IonToolbar } from '@ionic/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { getStorage, uploadBytes, ref, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, getFirestore, getDocs, serverTimestamp, query, updateDoc } from "firebase/firestore"; // Import serverTimestamp
+import { collection, addDoc, getFirestore, getDocs, serverTimestamp, query, updateDoc, Timestamp } from "firebase/firestore"; // Import serverTimestamp
 import { useHistory } from 'react-router';
 import "../firebaseConfig";
 
@@ -22,9 +22,55 @@ const Addsong: React.FC = () => {
     const [selectedFile0, setSelectedFile0] = useState<File>();
     const [selectedFile1, setSelectedFile1] = useState<File>();
     const [selectedAlbum, setSelectedAlbum] = useState<string>('');
+    const [selectedGenre, setSelectedGenre] = useState<string>('');
+    const [albums, setAlbums] = useState<Array<any>>([]);
     const storage = getStorage();
     const db = getFirestore();
-    const [albums, setAlbums] = useState<Array<any>>([]);
+
+    const genres = [
+        {
+          id: 1,
+          nama: 'Rock',
+          image: '',
+          link: '/genre0'
+        },
+        {
+          id: 2,
+          nama: 'Pop',
+          image: '',
+          link: '/genre1'
+        },
+        {
+          id: 3,
+          nama: 'Jazz',
+          image: '',
+          link: '/genre2'
+        },
+        {
+          id: 4,
+          nama: 'Classical',
+          image: '',
+          link: '/genre3'
+        },
+        {
+          id: 5,
+          nama: "80's",
+          image: '',
+          link: '/genre4'
+        },
+        {
+          id: 6,
+          nama: "Hip-Hop",
+          image: '',
+          link: '/genre5'
+        },
+        {
+          id: 7,
+          nama: "Indie",
+          image: '',
+          link: '/genre6'
+        }
+    ];
 
     useEffect(() => {
         async function getData() {
@@ -94,7 +140,7 @@ const Addsong: React.FC = () => {
     };
 
     const handleSaveSong = async () => {
-        if (!song.name && !selectedFile0 && !selectedFile1 && !selectedAlbum) return
+        if (!song.name && !selectedFile0 && !selectedFile1 && !selectedAlbum && !selectedGenre) return
 
         try {
             let downloadURL: string | null = null;
@@ -107,8 +153,10 @@ const Addsong: React.FC = () => {
                 album: albums.filter((x) => x.id == selectedAlbum)[0]?.name,
                 artistId: albums.filter((x) => x.id == selectedAlbum)[0]?.artistId,
                 artist: albums.filter((x) => x.id == selectedAlbum)[0]?.artist,
+                genre: selectedGenre,
                 photoURL: downloadURL,
-                songURL: downloadSongURL
+                songURL: downloadSongURL,
+                createdAt: Timestamp.now(),
             });
             try {
                 const songCollectionRef = collection(db, "song");
@@ -188,6 +236,14 @@ const Addsong: React.FC = () => {
                                                     <IonSelect value={selectedAlbum} onIonChange={(e) => setSelectedAlbum(e.detail.value)}>
                                                         {albums.map((album) => (
                                                             <IonSelectOption key={album.id} value={album.id}>{album.name}</IonSelectOption>
+                                                        ))}
+                                                    </IonSelect>
+                                                </IonItem>
+                                                <IonItem>
+                                                    <IonLabel>Pilih genre</IonLabel>
+                                                    <IonSelect value={selectedGenre} onIonChange={(e) => setSelectedGenre(e.detail.value)}>
+                                                        {genres.map((genre) => (
+                                                            <IonSelectOption key={genre.id} value={genre.nama}>{genre.nama}</IonSelectOption>
                                                         ))}
                                                     </IonSelect>
                                                 </IonItem>

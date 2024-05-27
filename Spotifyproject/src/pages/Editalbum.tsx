@@ -1,6 +1,6 @@
 import { IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonItemGroup, IonLabel, IonMenuButton, IonPage, IonRow, IonSelect, IonSelectOption, IonTitle, IonToolbar } from '@ionic/react';
 import React, { useEffect, useRef, useState } from 'react';
-import { getStorage, uploadBytes, ref, getDownloadURL } from 'firebase/storage';
+import { getStorage, uploadBytes, ref, getDownloadURL, deleteObject } from 'firebase/storage';
 import { collection, addDoc, getFirestore, getDocs, serverTimestamp, query, updateDoc } from "firebase/firestore"; // Import serverTimestamp
 import { useHistory, useParams } from 'react-router';
 import "../firebaseConfig";
@@ -121,6 +121,10 @@ const Editalbum: React.FC = () => {
             });
 
             if(selectedFile0) {
+                let pathAlbum = decodeURIComponent(snapshot.docs.filter(x => x.id == albumID)[0].data().photoURL.split("/o/")[1].split("?alt=")[0]);
+                const photoAlbumRef = ref(storage, pathAlbum);
+                deleteObject(photoAlbumRef)
+
                 let downloadURL: string | null = null;
                 downloadURL = (await savePhotoToFirebase()) as string;
                 await updateDoc(albumDocRef, {
