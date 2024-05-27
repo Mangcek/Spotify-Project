@@ -255,20 +255,20 @@ const PlaylistDetail1:React.FC = () =>{
                                 <IonGrid className='ion-no-padding'>
                                     <IonRow className="ion-text-center">
                                         <IonCol>
-                                        <div className="image-preview">
-                                            {
-                                                newPhoto ? <img src={newPhoto} /> :
-                                                playlist?.photoURL ? <img src={playlist?.photoURL} /> :
-                                                <h3>No photo chosen.</h3>
-                                            }
-                                            {/* {!playlist?.photoURL && <h3>No photo chosen.</h3>}
-                                            {newPhoto && <img src={newPhoto} />}
-                                            {playlist?.photoURL && <img src={playlist?.photoURL} />} */}
-                                        </div>
-                                        <IonButton fill="clear" onClick={takePhotoHandler}>
-                                            <IonIcon slot="start" icon={camera} />
-                                            <IonLabel>Take Photo</IonLabel>
-                                        </IonButton>
+                                            <div className="image-preview">
+                                                {
+                                                    newPhoto ? <img src={newPhoto} /> :
+                                                    playlist?.photoURL ? <img src={playlist?.photoURL} /> :
+                                                    <h3>No photo chosen.</h3>
+                                                }
+                                                {/* {!playlist?.photoURL && <h3>No photo chosen.</h3>}
+                                                {newPhoto && <img src={newPhoto} />}
+                                                {playlist?.photoURL && <img src={playlist?.photoURL} />} */}
+                                            </div>
+                                            <IonButton fill="clear" onClick={takePhotoHandler}>
+                                                <IonIcon slot="start" icon={camera} />
+                                                <IonLabel>Take Photo</IonLabel>
+                                            </IonButton>
                                             <IonList>
                                                 {songs.map((song, index) => (
                                                     <IonItem routerLink={`/play/${song.id}`} key={index}>

@@ -372,7 +372,7 @@ const Tab3: React.FC = () => {
               <IonCol>
                 {albums.map((album, index) => (
                   <>
-                    <IonCard key={album.id} className='ion-text-center ion-padding'>
+                    <IonCard key={album.id} className='ion-text-center ion-padding' routerLink={`/album/${album.id}`}>
                       <IonCardHeader>
                         <div id="a" style={{display: 'flex', justifyContent: 'center'}}>
                           <IonAvatar>
@@ -408,7 +408,7 @@ const Tab3: React.FC = () => {
               <IonCol>
                 <IonList key="artist">
                   {artists.map((artist, index) => (
-                    <IonItem key={artist.id} className='ion-padding'>
+                    <IonItem key={artist.id} className='ion-padding' routerLink={`/artist/${artist.id}`}>
                       <IonButtons slot='start'>
                         <IonAvatar>
                           <IonImg src={artist.photoURL} />
@@ -454,7 +454,7 @@ const Tab3: React.FC = () => {
                 <>
                 <IonItem key={playlist.id} routerLink={`/playlist/${playlist.id}`} className='ion-padding'>
                   <IonButtons slot='start'>
-                    <IonImg src='../public/favicon.png' />
+                    <IonImg src={playlist.photoURL} style={{width: "80px", height: "80px"}}/>
                   </IonButtons>
                   <IonLabel>{playlist.name}</IonLabel>
                   <IonButtons slot='end'>

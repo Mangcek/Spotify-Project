@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonRange, IonIcon, IonCol, IonRow, IonAvatar, IonButtons, IonButton } from '@ionic/react';
 import { play, pause, playBack, playForward, volumeHigh, volumeMute, arrowBackCircleOutline } from 'ionicons/icons';
 import './PlayMusic2.css'
 import { useParams } from 'react-router';
-import { collection, getDocs, getFirestore, query } from 'firebase/firestore';
-
+import { collection, getDocs, getFirestore, query, updateDoc, where } from 'firebase/firestore';
+import { AuthContext } from "../context/ContextProvider";
+import { AuthContextType } from "../context/ContextProvider";
 
 interface SongProps {
   id: string;
@@ -19,8 +20,8 @@ interface SongProps {
 }
 
 const Tab1: React.FC = () => {
-  const db = getFirestore();
   const songID = useParams<{songId: string}>().songId;
+  const db = getFirestore();
   const [song, setSong] = useState<SongProps | null>({
     id: "",
     name: "",
@@ -38,10 +39,32 @@ const Tab1: React.FC = () => {
   //   { title: 'Ghost', artist: 'Justin Bieber', cover: 'src/assets/img/album3.jpg', file: 'Ghost.mp3'}
   // ]);
   // const [currentSong, setCurrentSong] = useState<Song | null>(null);
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [progress, setProgress] = useState<number>(0);
+  // const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  // const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  // const [isMuted, setIsMuted] = useState<boolean>(false);
+  // const [progress, setProgress] = useState<number>(0);
+  const authContext = useContext(AuthContext) as AuthContextType;
+  const { auth, setAuth } = authContext;
+
+  const addSongToHistory = async () => {
+    try {
+      const userCollection = collection(db, "users");
+      const snapshot = await getDocs(query(userCollection, where("uid", "==", auth?.uid)));
+      const usersDocRef = snapshot.docs[0].ref;
+      let history = snapshot.docs[0].data().history
+      if(history.includes(songID)) {
+        history = snapshot.docs[0].data().history.filter((x:any) => x != songID)
+      }
+      history.unshift(songID);
+
+      await updateDoc(usersDocRef, {
+        history: history,
+      })
+      
+    } catch (error) {
+      console.error("Error unshift history: ", error);
+    }
+  }
 
   const fetchSong = async () => {
     try {
@@ -69,6 +92,7 @@ const Tab1: React.FC = () => {
   };
 
   useEffect(() => {
+    addSongToHistory();
     fetchSong();
   }, []);
 

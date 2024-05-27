@@ -1,13 +1,15 @@
 import { IonAvatar, IonButton, IonButtons, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonMenuButton, IonPage, IonPopover, IonRow, IonSearchbar, IonTitle, IonToolbar } from '@ionic/react';
-import { cameraOutline, ellipsisVerticalOutline, heartOutline, newspaperOutline, skull, walk, headset, ear, hourglass, accessibility, sunny } from 'ionicons/icons';
+import { cameraOutline, ellipsisVerticalOutline, heartOutline, newspaperOutline, skull, walk, headset, ear, hourglass, accessibility, sunny, heart } from 'ionicons/icons';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
-import { getDocs, collection, getFirestore, query } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { getDocs, collection, getFirestore, query, where, updateDoc } from 'firebase/firestore';
+import { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
+import { AuthContext } from "../context/ContextProvider";
+import { AuthContextType } from "../context/ContextProvider";
 
 const Tab2: React.FC = () => {
   const data = [
@@ -54,52 +56,101 @@ const Tab2: React.FC = () => {
   const [lagus, setLagu] = useState<Array<any>>([]);
   const [filteredLagus, setFilteredLagus] = useState<Array<any>>([]);
   const [filteredArtists, setFilteredArtists] = useState<Array<any>>([]);
+  const [likedArtist, setLikedArtist] = useState<Array<any>>([]);
   const [showSongSearch, setShowSongSearch] = useState(false);
   const [showArtistSearch, setShowArtistSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const authContext = useContext(AuthContext) as AuthContextType;
+  const { auth, setAuth } = authContext;
 
   const spaceBetween = {
     display: "flex",
     justifyContent: "space-between",
   };
 
-  useEffect(() => {
-    const fetchArtists = async () => {
-      try {
-        const artistCollectionRef = collection(db, "artist");
-        const snapshot = await getDocs(query(artistCollectionRef));
-        setArtists(snapshot.docs.map(doc => ({
-            id: doc.id,
-            name: doc.data().name,
-            photoURL: doc.data().photoURL
-        })));
-      } catch (error) {
-        console.error("Error getting artists: ", error);
+  const fetchArtists = async () => {
+    try {
+      const artistCollectionRef = collection(db, "artist");
+      const snapshot = await getDocs(query(artistCollectionRef));
+      setArtists(snapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().name,
+          photoURL: doc.data().photoURL
+      })));
+    } catch (error) {
+      console.error("Error getting artists: ", error);
+    }
+  };
+
+  async function fetchLagus() {
+    try {
+      const songCollectionRef = collection(db, "song");
+      const snapshot = await getDocs(query(songCollectionRef));
+      setLagu(snapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().name,
+          albumId: doc.data().albumId,
+          album: doc.data().album,
+          artistId: doc.data().artistId,
+          artist: doc.data().artist,
+          songURL: doc.data().songURL,
+          photoURL: doc.data().photoURL,
+      })));
+    } catch (error) {
+      console.error("Error getting songs: ", error);
+    }
+  }
+
+  async function getLikedArtist() {
+    try {
+      const userCollection = collection(db, "users");
+      const snapshot = await getDocs(query(userCollection, where("uid", "==", auth?.uid)));
+      setLikedArtist(snapshot.docs[0].data().likedArtist)
+    } catch (error) {
+        console.error("Error getting documents: ", error);
+    }
+  }
+
+  const likeArtist = async (artistId: string) => {
+    try {
+      const userCollection = collection(db, "users");
+      const snapshot = await getDocs(query(userCollection, where("uid", "==", auth?.uid)));
+      const usersDocRef = snapshot.docs[0].ref;
+
+      let userLikedArtist = [];
+      if(snapshot.docs[0]) {
+        userLikedArtist = snapshot.docs[0].data().likedArtist
       }
-    };
-    fetchArtists();
-  }, [db]);
+      const newUserLikedArtist = [...userLikedArtist, artistId]
+      
+      await updateDoc(usersDocRef, {
+        likedArtist: newUserLikedArtist,
+      });
+      setLikedArtist(newUserLikedArtist)
+    } catch (error) {
+      console.error("Error like album: ", error);
+    }
+  }
+
+  const dislikeArtist = async (artistId: string) => {
+    try {
+      const userCollection = collection(db, "users");
+      const snapshot = await getDocs(query(userCollection, where("uid", "==", auth?.uid)));
+      const usersDocRef = snapshot.docs[0].ref;
+
+      await updateDoc(usersDocRef, {
+        likedArtist: snapshot.docs[0].data().likedArtist.filter((x:any) => x != artistId),
+      });
+      setLikedArtist(snapshot.docs[0].data().likedArtist.filter((x:any) => x != artistId))
+    } catch (error) {
+      console.error("Error like album: ", error);
+    }
+  }
 
   useEffect(() => {
-    async function fetchLagus() {
-      try {
-        const songCollectionRef = collection(db, "song");
-        const snapshot = await getDocs(query(songCollectionRef));
-        setLagu(snapshot.docs.map(doc => ({
-            id: doc.id,
-            name: doc.data().name,
-            albumId: doc.data().albumId,
-            album: doc.data().album,
-            artistId: doc.data().artistId,
-            artist: doc.data().artist,
-            songURL: doc.data().songURL,
-            photoURL: doc.data().photoURL,
-        })));
-      } catch (error) {
-        console.error("Error getting songs: ", error);
-      }
-    }
+    fetchArtists();
     fetchLagus();
+    getLikedArtist();
   }, [db]);
 
   const handleCardClick = (link: string) => {
@@ -203,9 +254,11 @@ const Tab2: React.FC = () => {
                                 </div>
                                 <h5>{artist.name}</h5>
                                 <div style={spaceBetween}>
-                                  <IonButtons slot='start'>
-                                    <IonButton><IonIcon icon={heartOutline}/></IonButton>
-                                  </IonButtons>
+                                <IonButtons slot='start'>
+                                  <IonButton onClick={() => likedArtist.includes(artist.id) ? dislikeArtist(artist.id) : likeArtist(artist.id)}>
+                                    <IonIcon icon={likedArtist.includes(artist.id) ? heart : heartOutline}/>
+                                  </IonButton>
+                                </IonButtons>
                                   <IonButtons slot='end'>
                                     <IonButton id="vu" ><IonIcon icon={ellipsisVerticalOutline}/></IonButton>
                                     <IonPopover trigger="vu" triggerAction="click">
@@ -240,7 +293,7 @@ const Tab2: React.FC = () => {
                         >
                         {filteredLagus.map(lagu => (
                           <SwiperSlide key={lagu.id} className='slide'>
-                            <div className='slide-content'>
+                            <div className='slide-content' onClick={() => history.push(`/play/${lagu.id}`)}>
                               <div className='user-image'>
                                 <img src={lagu.photoURL} alt={lagu.name} style={{width: "100px", height: "100px"}}/>
                               </div>

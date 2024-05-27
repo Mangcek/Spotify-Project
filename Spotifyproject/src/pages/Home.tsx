@@ -356,7 +356,7 @@ const Tab1: React.FC = () => {
                     >
                       {albums.slice(0, albums.length / 2).map(album => (
                         <SwiperSlide key={album.id} className='slide'>
-                          <div className='slide-content'>
+                          <div className='slide-content'  onClick={() => history.push(`/album/${album.id}`)}>
                             <div className='user-image'>
                               <img src={album.photoURL} style={{width: "100px", height: "100px"}}/>
                             </div>
@@ -397,8 +397,8 @@ const Tab1: React.FC = () => {
                       // onSwiper={swiper => console.log(swiper)}
                     >
                       {newArtists.slice(0, 5).map(artist => (
-                        <SwiperSlide key={artist.id} className='slide' >
-                          <div className='slide-content'>
+                        <SwiperSlide key={artist.id} className='slide'>
+                          <div className='slide-content' onClick={() => history.push(`/artist/${artist.id}`)}>
                             <div className='user-image'>
                               <img src={artist.photoURL} style={{width: "100px", height: "100px"}}/>
                             </div>

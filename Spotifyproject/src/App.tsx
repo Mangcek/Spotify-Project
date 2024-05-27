@@ -50,6 +50,7 @@ import Editartist from './pages/Editartist';
 import Editalbum from './pages/Editalbum';
 import Editsong from './pages/Editsong';
 import SearchGenre from './pages/SearchGenre';
+import AlbumDetail from './pages/AlbumDetail';
 
 setupIonicReact();
 
@@ -108,10 +109,10 @@ const App: React.FC = () => {
                 <IonIcon icon={time} size="large"/>
                 <IonLabel className='menu'>Listening History</IonLabel>
               </IonItem>
-              <IonItem button routerLink="/settings">
+              {/* <IonItem button routerLink="/settings">
                 <IonIcon icon={settings} size="large"/>
                 <IonLabel className='menu'>Settings and privacy</IonLabel>
-              </IonItem>
+              </IonItem> */}
               { isAdmin && 
                 <IonItem button routerLink="/admin">
                   <IonIcon icon={hammerOutline} size="large"/>
@@ -147,7 +148,8 @@ const App: React.FC = () => {
           <Route exact path="/lupa" component={Lupapassword} />
           <Route exact path="/lupa1" component={Lupapassword1} />
           <Route exact path="/YourLibrary" component={YourLibrary} />
-          <Route path="/artist/:artistNamaartist" component={artistDetail} />
+          <Route path="/album/:albumId" component={AlbumDetail} />
+          <Route path="/artist/:artistId" component={artistDetail} />
           <Route path="/playlist/:playlistId" component={PlaylistDetail1} />
           <Route path="/play/:songId" component={PlayMusic2} />
         </IonRouterOutlet>
