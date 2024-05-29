@@ -1,6 +1,6 @@
-import { IonPage, IonHeader, IonContent, IonGrid, IonRow, IonCol, IonButtons, IonBackButton, IonIcon, IonTitle, IonToolbar, IonImg, IonList, IonAvatar, IonItem, IonButton, IonLabel, IonInput } from '@ionic/react';
+import { IonPage, IonHeader, IonContent, IonGrid, IonRow, IonCol, IonButtons, IonBackButton, IonIcon, IonTitle, IonToolbar, IonImg, IonList, IonAvatar, IonItem, IonButton, IonLabel, IonInput, IonModal, IonSelect, IonSelectOption } from '@ionic/react';
 import { add, addOutline, camera, ellipsisVerticalOutline, play } from 'ionicons/icons';
-import React, { useEffect, useState } from'react';
+import React, { useEffect, useRef, useState } from'react';
 import { Photo, Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { useHistory, useParams } from 'react-router';
 import { collection, getDocs, getFirestore, query, updateDoc } from 'firebase/firestore';
@@ -33,12 +33,17 @@ const PlaylistDetail1:React.FC = () =>{
     });
     const [songsId, setSongsId] = useState<Array<any>>([]);
     const [songs, setSongs] = useState<Array<any>>([]);
+    const [lagus, setLagus] = useState<Array<any>>([]);
+    const [selectedSong, setSelectedSong] = useState<string>('');
     const db = getFirestore();
     const storage = getStorage();
     const history = useHistory();
 
     const [photoState, setPhoto] = useState<PhotoProps | null>(null);
     const [newPhoto, setNewPhoto] = useState<string>('');
+    const modal = useRef<HTMLIonModalElement>(null);
+    const input = useRef<HTMLIonInputElement>(null);
+    const [modalLabel, setModalLabel] = useState<string>('Pilih lagu untuk ditambahkan ke playlist');
 
     const spaceBetween = {
         width: "100%",
@@ -102,9 +107,51 @@ const PlaylistDetail1:React.FC = () =>{
         }
     }
 
+    const addSongToPlaylist = async (songId: string) => {
+      try {
+        const playlistCollection = collection(db, "playlist")
+        const snapshotPlaylist = await getDocs(query(playlistCollection))
+        snapshotPlaylist.docs.forEach( async (doc) => {
+          if(doc.id == playlistID) {
+              const newSongList = [...doc.data().song, songId]
+              await updateDoc(doc.ref, {
+                  song: newSongList,
+              });
+          }
+        })
+      } catch (error) {
+        console.error("Error like album: ", error);
+      }
+    }
+
+    async function fetchLagus() {
+      try {
+          const songCollectionRef = collection(db, "song");
+          const snapshot = await getDocs(query(songCollectionRef));
+          setLagus(snapshot.docs.map(doc => ({
+              id: doc.id,
+              name: doc.data().name,
+              albumId: doc.data().albumId,
+              album: doc.data().album,
+              artistId: doc.data().artistId,
+              artist: doc.data().artist,
+              songURL: doc.data().songURL,
+              photoURL: doc.data().photoURL,
+          })));
+      } catch (error) {
+          console.error("Error getting documents: ", error);
+      }
+  }
+
+    function confirm() {
+      addSongToPlaylist(selectedSong);
+      setSelectedSong('');
+      modal.current?.dismiss(input.current?.value, 'confirm');
+    }
+
     useEffect(() => {
-        saveToFirestore();
-        fetchPlaylist();
+      saveToFirestore();
+      fetchPlaylist();
     }, [newPhoto])
 
     const savePhoto = async (
@@ -219,6 +266,7 @@ const PlaylistDetail1:React.FC = () =>{
 
     const fetchSongs = async () => {
         try {
+          setSongs([]);
           const songCollection = collection(db, "song");
           const snapshot = await getDocs(query(songCollection));
           snapshot.docs.forEach((doc) => {
@@ -244,12 +292,18 @@ const PlaylistDetail1:React.FC = () =>{
     };
 
     useEffect(() => {
-        fetchPlaylist();
+      fetchPlaylist();
+      fetchLagus();
+      fetchSongs();
     }, [])
+        
+    useEffect(() => {
+      fetchSongs();
+    }, [playlist])
     
     useEffect(() => {
-        if(songs.length == 0) fetchSongs();
-    }, [playlist])
+      fetchSongs();
+    }, [selectedSong])
 
     return(
         <>
@@ -262,8 +316,8 @@ const PlaylistDetail1:React.FC = () =>{
                         <IonTitle>
                             <IonInput value={playlist?.name}/>
                         </IonTitle>
-                        <IonButtons slot='end'>
-                            <IonIcon icon={add} size='large' />
+                        <IonButtons id='open-modal-add-to-playlist' slot='end'>
+                            <IonIcon slot="icon-only" icon={add} />
                         </IonButtons>
                     </IonToolbar>
                 </IonHeader>
@@ -308,6 +362,32 @@ const PlaylistDetail1:React.FC = () =>{
                             </IonCol>
                         </IonRow>
                     </IonGrid>
+                    <IonModal ref={modal} trigger="open-modal-add-to-playlist">
+                      <IonHeader>
+                        <IonToolbar>
+                          <IonButtons slot="start">
+                            <IonButton onClick={() => modal.current?.dismiss()}>Cancel</IonButton>
+                          </IonButtons>
+                          <IonTitle>Welcome</IonTitle>
+                          <IonButtons slot="end">
+                            <IonButton strong={true} onClick={() => confirm()}>
+                              Confirm
+                            </IonButton>
+                          </IonButtons>
+                        </IonToolbar>
+                      </IonHeader>
+                      <IonContent className="ion-padding">
+                        {/* <IonLabel position='floating'>{modalLabel}</IonLabel> */}
+                        <IonItem>
+                          <IonLabel>Pilih lagu untuk ditambahkan ke playlist</IonLabel>
+                          <IonSelect value={selectedSong} onIonChange={(e) => setSelectedSong(e.detail.value)}>
+                              {lagus.map((lagu) => (
+                                  <IonSelectOption key={lagu.id} value={lagu.id}>{lagu.name}</IonSelectOption>
+                              ))}
+                          </IonSelect>
+                        </IonItem>
+                      </IonContent>
+                    </IonModal>
                 </IonContent>
             </IonPage>
         </>
