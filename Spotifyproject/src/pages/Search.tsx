@@ -248,7 +248,7 @@ const Tab2: React.FC = () => {
                         >
                           {artists.slice(0, 8).map(artist => (
                             <SwiperSlide key={artist.id} className='slide'>
-                              <div className='slide-content'>
+                              <div className='slide-content' onClick={() => history.push(`/artist/${artist.id}`)}>
                                 <div className='user-image'>
                                   <img src={artist.photoURL} alt={artist.name} style={{width: "100px", height: "100px"}}/>
                                 </div>
@@ -263,7 +263,7 @@ const Tab2: React.FC = () => {
                                     <IonButton id="vu" ><IonIcon icon={ellipsisVerticalOutline}/></IonButton>
                                     <IonPopover trigger="vu" triggerAction="click">
                                       <IonContent class="ion-padding">
-                                        <IonItem button={true} routerLink={`/artist/${artist.namaartist}`}>
+                                        <IonItem button={true} routerLink={`/artist/${artist.id}`}>
                                           <IonIcon icon={newspaperOutline} />
                                           <IonLabel>Selengkapnya</IonLabel>
                                         </IonItem>
@@ -320,7 +320,7 @@ const Tab2: React.FC = () => {
                         >
                         {filteredArtists.map(artist => (
                           <SwiperSlide key={artist.id} className='slide'>
-                            <div className='slide-content'>
+                            <div className='slide-content' onClick={() => history.push(`/artist/${artist.id}`)}>
                               <div className='user-image'>
                                 <img src={artist.photoURL} alt={artist.name} style={{width: "100px", height: "100px"}}/>
                               </div>

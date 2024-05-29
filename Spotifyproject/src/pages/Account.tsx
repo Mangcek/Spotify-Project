@@ -120,7 +120,7 @@ const Account:React.FC = () => {
                                             <>
                                             <IonItem key={playlist.id} routerLink={`/playlist/${playlist.id}`} className='ion-padding'>
                                             <IonButtons slot='start'>
-                                            <IonImg src={playlist.photoURL} style={{width: "80px", height: "80px"}}/>
+                                            <IonImg src={playlist.photoURL || '../public/favicon.png'} style={{width: "80px", height: "80px"}}/>
                                             </IonButtons>
                                             <IonLabel>{playlist.name}</IonLabel>
                                             <IonButtons slot='end'>

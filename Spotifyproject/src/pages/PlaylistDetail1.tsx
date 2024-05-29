@@ -2,7 +2,7 @@ import { IonPage, IonHeader, IonContent, IonGrid, IonRow, IonCol, IonButtons, Io
 import { add, addOutline, camera, ellipsisVerticalOutline, play } from 'ionicons/icons';
 import React, { useEffect, useState } from'react';
 import { Photo, Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { useParams } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { collection, getDocs, getFirestore, query, updateDoc } from 'firebase/firestore';
 import { isPlatform } from "@ionic/react";
 import { Directory, Filesystem } from "@capacitor/filesystem";
@@ -35,6 +35,7 @@ const PlaylistDetail1:React.FC = () =>{
     const [songs, setSongs] = useState<Array<any>>([]);
     const db = getFirestore();
     const storage = getStorage();
+    const history = useHistory();
 
     const [photoState, setPhoto] = useState<PhotoProps | null>(null);
     const [newPhoto, setNewPhoto] = useState<string>('');
@@ -169,6 +170,24 @@ const PlaylistDetail1:React.FC = () =>{
         }
       };
 
+    const removeFromPlaylist = async (songId: string) => {
+      try {
+        const playlistCollection = collection(db, "playlist")
+        const snapshotPlaylist = await getDocs(query(playlistCollection))
+        snapshotPlaylist.docs.forEach( async (doc) => {
+          if(doc.id == playlistID) {
+            await updateDoc(doc.ref, {
+                song: doc.data().song.filter((x:any) => x != songId),
+            });
+            setSongs(songs.filter(x => x.id != songId))
+            console.log("BERHASIL DELETE")
+          }
+        })
+      } catch (error) {
+        console.error("Error add to playlist: ", error);
+      }
+    }
+
     async function fetchPlaylist() {
         try {
             setPlaylist({        
@@ -271,13 +290,14 @@ const PlaylistDetail1:React.FC = () =>{
                                             </IonButton>
                                             <IonList>
                                                 {songs.map((song, index) => (
-                                                    <IonItem routerLink={`/play/${song.id}`} key={index}>
+                                                    <IonItem key={index}>
                                                         <IonAvatar slot="start">
                                                             <IonImg src={song.photoURL} />
                                                         </IonAvatar>
                                                         <div style={spaceBetween}>
                                                             <IonLabel style={{marginTop: 'auto', marginBottom: 'auto'}}>{song.name}</IonLabel>
-                                                            <IonLabel style={{marginTop: 'auto', marginBottom: 'auto'}}>{song.artist}</IonLabel>
+                                                            <IonLabel onClick={() => history.push(`/play/${song.id}`)} style={{marginTop: 'auto', marginBottom: 'auto'}}>Play</IonLabel>
+                                                            <IonButton onClick={() => removeFromPlaylist(song.id)} style={{marginTop: 'auto', marginBottom: 'auto'}}>Remove</IonButton>
                                                         </div>
                                                     </IonItem>
                                                 ))}

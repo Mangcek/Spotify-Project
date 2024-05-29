@@ -36,7 +36,7 @@ const SearchGenre: React.FC = () => {
           })
           setOpenSelect(false);
         } catch (error) {
-          console.error("Error like album: ", error);
+          console.error("Error add to playlist: ", error);
         }
     }
 
@@ -55,7 +55,7 @@ const SearchGenre: React.FC = () => {
         } catch (error) {
             console.error("Error getting documents: ", error);
         }
-      }
+    }
 
     async function fetchRockSongs() {
         try {

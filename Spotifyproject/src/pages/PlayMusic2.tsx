@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonRange, IonIcon, IonCol, IonRow, IonAvatar, IonButtons, IonButton } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonRange, IonIcon, IonCol, IonRow, IonAvatar, IonButtons, IonButton, IonSelect, IonSelectOption } from '@ionic/react';
 import { play, pause, playBack, playForward, volumeHigh, volumeMute, arrowBackCircleOutline } from 'ionicons/icons';
 import './PlayMusic2.css'
 import { useParams } from 'react-router';
@@ -33,6 +33,7 @@ const Tab1: React.FC = () => {
     photoURL: "",
     songURL: "",
 });
+const [playlists, setPlaylists] = useState<Array<any>>([]);
   // const [songs, setSongs] = useState<Song[]>([
   //   { title: 'Losing You ', artist: 'Blanke', cover: 'src/assets/img/album1.jpg', file: 'Losing You.mp3'},
   //   { title: 'With U ', artist: 'Roy Knox', cover: 'src/assets/img/album2.jpg', file: 'With U.mp3'},
@@ -91,9 +92,44 @@ const Tab1: React.FC = () => {
     }
   };
 
+  async function fetchPlaylists() {
+    try {
+        const userCollection = collection(db, "users");
+        const snapshotUser = await getDocs(query(userCollection, where("uid", "==", auth?.uid)));
+
+        const playlistCollectionRef = collection(db, "playlist");
+        const snapshot = await getDocs(query(playlistCollectionRef, where("userId", "==", snapshotUser.docs[0].id)));
+        setPlaylists(snapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            photoURL: doc.data().photoURL
+        })));
+    } catch (error) {
+        console.error("Error getting documents: ", error);
+    }
+  }
+
+  const addSongToPlaylist = async (playlistId: string, songId: string) => {
+    try {
+      const playlistCollection = collection(db, "playlist")
+      const snapshotPlaylist = await getDocs(query(playlistCollection))
+      snapshotPlaylist.docs.forEach( async (doc) => {
+        if(doc.id == playlistId) {
+            const newSongList = [...doc.data().song, songId]
+            await updateDoc(doc.ref, {
+                song: newSongList,
+            });
+        }
+      })
+    } catch (error) {
+      console.error("Error like album: ", error);
+    }
+  }
+
   useEffect(() => {
     addSongToHistory();
     fetchSong();
+    fetchPlaylists();
   }, []);
 
   // useEffect(() => {
@@ -182,13 +218,22 @@ const Tab1: React.FC = () => {
           <img src={song?.photoURL} />
           <div style={{width: "100%", display: "flex", flexDirection: "column", justifyContent: "center"}}>
             <IonLabel style={{marginTop: "16px"}} className="ion-text-center">{song?.name}</IonLabel>
-            <IonLabel style={{marginTop: "16px", marginBottom: "32px"}} className="ion-text-center">{song?.artist}</IonLabel>
-            <div style={{margin: 'auto'}}>
+            <IonLabel style={{margin: "16px auto"}} className="ion-text-center">{song?.artist}</IonLabel>
+            <div style={{margin: '16px auto'}}>
               {song?.songURL &&   
                   <audio controls>
                       <source src={song?.songURL} type="audio/mpeg"></source>
                   </audio>
               }
+            </div>
+            <div style={{margin: 'auto'}}>
+              <IonSelect label="Add To Playlist" id="addPlaylist" 
+                onIonChange={(e) => addSongToPlaylist(e.detail.value, songID)}
+                >
+                  {playlists.map((playlist) => (
+                      <IonSelectOption key={playlist.id} value={playlist.id}>{playlist.name}</IonSelectOption>
+                  ))}
+            </IonSelect>
             </div>
           </div>
         </IonRow>
